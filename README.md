@@ -2,7 +2,7 @@
 
 A Hermes skill that adds [Cerebras Inference](https://www.cerebras.ai/) to the provider list. It is a registration helper, not a model-provider code plugin: Hermes reads the provider row from `providers:` in its config.
 
-The script probes Cerebras' public model catalog, then uses `hermes config set` to create `providers.cerebras`. It does not change your default model, write an API key, or send a completion.
+The helper only lists Cerebras' public model catalog and suggests a current row model. The skill then uses `hermes config set` to create `providers.cerebras`. It does not change your active model, write an API key, or send a completion.
 
 ## Install
 
@@ -15,16 +15,26 @@ hermes skills install NostrDanish/hermes-cerebras-provider/skills/hermes-cerebra
 From the installed skill directory:
 
 ```bash
-python3 scripts/add_cerebras.py          # preview only
-python3 scripts/add_cerebras.py --apply  # register providers.cerebras
+python3 scripts/list_models.py  # read-only catalog discovery
 ```
 
-The preview is a dry run. `--apply` prints `verified` only after reading back the row and checking that `model.provider` and `model.default` are unchanged. Use `--model <id>` to select a different model from the live public catalog, or `--home <path>` to target a separate Hermes profile.
+Choose the suggested model ID from the output, then register the row with the Hermes CLI. Replace the example model ID below if the helper suggests another one:
+
+```bash
+hermes config set providers.cerebras.name cerebras
+hermes config set providers.cerebras.api https://api.cerebras.ai/v1
+hermes config set providers.cerebras.default_model qwen-3.8-27b
+hermes config set providers.cerebras.discover_models true
+hermes config set providers.cerebras.transport chat_completions
+hermes config set providers.cerebras.key_env HERMES_CUSTOM_CEREBRAS_API_KEY
+```
+
+Read the provider row back and confirm `model.provider` and `model.default` still match their pre-registration values. Use `HERMES_HOME` on each Hermes CLI command when targeting a separate profile.
 
 ## Provider details
 
 - Base URL: `https://api.cerebras.ai/v1`
-- Default row model: `qwen-3.8-27b` when it is in the public catalog; otherwise the first catalog model
+- Helper: `python3 scripts/list_models.py` (read-only catalog discovery)
 - Auth slot: `HERMES_CUSTOM_CEREBRAS_API_KEY`
 - API mode: OpenAI-compatible Chat Completions
 
